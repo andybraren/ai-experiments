@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interface Builder</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Fixed header bar -->
+    <header class="header">
+        <h1>Interface Builder</h1>
+    </header>
+
+    <!-- Main container for panes -->
+    <main class="main-container" id="mainContainer">
+        <!-- Initial pane will be created by JavaScript -->
+    </main>
+
+    <!-- Markup overlay for drawing -->
+    <div id="markupOverlay" class="markup-overlay" style="display: none;">
+        <canvas id="markupCanvas" class="markup-canvas"></canvas>
+    </div>
+
+    <!-- Fixed bottom bar -->
+    <footer class="bottom-bar">
+        <div class="bottom-bar-content">
+            <input type="text" class="bottom-input" placeholder="Make something awesome." />
+            <button class="paint-brush-btn" title="Paint Tool">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18.37 2.63L21.37 5.63C22.15 6.41 22.15 7.66 21.37 8.44L8.44 21.37C7.66 22.15 6.41 22.15 5.63 21.37L2.63 18.37C1.85 17.59 1.85 16.34 2.63 15.56L15.56 2.63C16.34 1.85 17.59 1.85 18.37 2.63Z"/>
+                    <path d="M9 12L12 15"/>
+                    <path d="M5 5L9 9"/>
+                </svg>
+            </button>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+    
+    <!-- Auto-reload development script -->
+    <!--
+    <script>
+    if (location.hostname === 'localhost' || location.hostname === '127.0.0.1' || location.hostname === '') {
+        let lastModified = { js: 0, css: 0 };
+        
+        setInterval(async () => {
+            try {
+                // Check app.js
+                const jsResp = await fetch('app.js', { cache: 'no-cache' });
+                const jsModified = new Date(jsResp.headers.get('last-modified')).getTime();
+                
+                // Check styles.css
+                const cssResp = await fetch('styles.css', { cache: 'no-cache' });
+                const cssModified = new Date(cssResp.headers.get('last-modified')).getTime();
+                
+                if (lastModified.js && jsModified > lastModified.js) {
+                    location.reload();
+                    return;
+                }
+                
+                if (lastModified.css && cssModified > lastModified.css) {
+                    // Hot reload CSS without page refresh
+                    const link = document.querySelector('link[href*="styles.css"]');
+                    link.href = 'styles.css?' + Date.now();
+                }
+                
+                lastModified.js = jsModified;
+                lastModified.css = cssModified;
+            } catch (e) {
+                // Ignore fetch errors
+            }
+        }, 500); // Check every 500ms
+    }
+    </script>
+    -->
+</body>
+</html>
