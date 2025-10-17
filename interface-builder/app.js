@@ -479,6 +479,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function setupBottomBar() {
     const bottomInput = document.querySelector('.bottom-input');
     const paintBrushBtn = document.querySelector('.paint-brush-btn');
+    const magicWandBtn = document.querySelector('.magic-wand-btn');
     
     // Handle input enter key
     if (bottomInput) {
@@ -500,6 +501,13 @@ function setupBottomBar() {
             toggleMarkupMode();
         });
     }
+    
+    // Handle magic wand button click
+    if (magicWandBtn) {
+        magicWandBtn.addEventListener('click', () => {
+            toggleMagicWandMode();
+        });
+    }
 }
 
 // Markup system state
@@ -511,6 +519,12 @@ let markupState = {
     overlay: null,
     lastX: 0,
     lastY: 0
+};
+
+// Magic wand system state
+let magicWandState = {
+    isActive: false,
+    hoveredElement: null
 };
 
 /**
@@ -528,19 +542,18 @@ function toggleMarkupMode() {
         markupState.canvas = canvas;
         markupState.ctx = canvas.getContext('2d');
         
-        // Setup canvas
-        setupCanvas();
-        
-        // Show overlay
+        // Show overlay first
         overlay.style.display = 'block';
         
         // Update button state
         paintBrushBtn.classList.add('active');
         
-        // Setup drawing event listeners
-        setupDrawingEvents();
+        // Wait for the overlay to be rendered before setting up canvas
+        requestAnimationFrame(() => {
+            setupCanvas();
+            setupDrawingEvents();
+        });
         
-        console.log('Markup mode activated');
     } else {
         // Deactivate markup mode
         deactivateMarkupMode();
@@ -571,7 +584,6 @@ function deactivateMarkupMode() {
     // Remove drawing event listeners
     removeDrawingEvents();
     
-    console.log('Markup mode deactivated');
 }
 
 /**
@@ -582,14 +594,17 @@ function setupCanvas() {
     const ctx = markupState.ctx;
     const overlay = markupState.overlay;
     
-    console.log('Setting up canvas...');
-    console.log('Overlay dimensions:', overlay.offsetWidth, 'x', overlay.offsetHeight);
+    // Get the computed dimensions of the overlay
+    const rect = overlay.getBoundingClientRect();
     
-    // Set canvas size to match the overlay dimensions (main content area)
-    canvas.width = overlay.offsetWidth;
-    canvas.height = overlay.offsetHeight;
+    // Use getBoundingClientRect for more reliable dimensions
+    const canvasWidth = rect.width > 0 ? rect.width : window.innerWidth;
+    const canvasHeight = rect.height > 0 ? rect.height : window.innerHeight - 112; // 3rem + 4rem = 112px
     
-    console.log('Canvas dimensions set to:', canvas.width, 'x', canvas.height);
+    // Set canvas size
+    canvas.width = canvasWidth;
+    canvas.height = canvasHeight;
+    
     
     // Setup drawing properties
     ctx.strokeStyle = '#ff0000'; // Red color
@@ -597,12 +612,6 @@ function setupCanvas() {
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     
-    console.log('Canvas context configured:', {
-        strokeStyle: ctx.strokeStyle,
-        lineWidth: ctx.lineWidth,
-        lineCap: ctx.lineCap,
-        lineJoin: ctx.lineJoin
-    });
     
     // Clear any existing content
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -655,12 +664,10 @@ function removeDrawingEvents() {
  * Start drawing
  */
 function startDrawing(e) {
-    console.log('Start drawing triggered', e.type);
     markupState.isDrawing = true;
     const rect = markupState.overlay.getBoundingClientRect();
     markupState.lastX = e.clientX - rect.left;
     markupState.lastY = e.clientY - rect.top;
-    console.log('Drawing started at:', markupState.lastX, markupState.lastY);
 }
 
 /**
@@ -672,8 +679,6 @@ function draw(e) {
     const rect = markupState.overlay.getBoundingClientRect();
     const currentX = e.clientX - rect.left;
     const currentY = e.clientY - rect.top;
-    
-    console.log('Drawing line from', markupState.lastX, markupState.lastY, 'to', currentX, currentY);
     
     markupState.ctx.beginPath();
     markupState.ctx.moveTo(markupState.lastX, markupState.lastY);
@@ -696,13 +701,11 @@ function stopDrawing() {
  */
 function handleTouchStart(e) {
     e.preventDefault(); // Prevent scrolling
-    console.log('Touch start triggered');
     const touch = e.touches[0];
     const rect = markupState.overlay.getBoundingClientRect();
     markupState.isDrawing = true;
     markupState.lastX = touch.clientX - rect.left;
     markupState.lastY = touch.clientY - rect.top;
-    console.log('Touch started at:', markupState.lastX, markupState.lastY);
 }
 
 /**
@@ -716,8 +719,6 @@ function handleTouchMove(e) {
     const rect = markupState.overlay.getBoundingClientRect();
     const currentX = touch.clientX - rect.left;
     const currentY = touch.clientY - rect.top;
-    
-    console.log('Touch drawing line from', markupState.lastX, markupState.lastY, 'to', currentX, currentY);
     
     markupState.ctx.beginPath();
     markupState.ctx.moveTo(markupState.lastX, markupState.lastY);
@@ -749,6 +750,146 @@ function handleResize() {
         // Restore drawing (this will be at the original position, which is okay for most use cases)
         markupState.ctx.putImageData(imageData, 0, 0);
     }
+}
+
+/**
+ * Toggle magic wand mode on/off
+ */
+function toggleMagicWandMode() {
+    const magicWandBtn = document.querySelector('.magic-wand-btn');
+    
+    if (!magicWandState.isActive) {
+        // Activate magic wand mode
+        magicWandState.isActive = true;
+        
+        // Update button state
+        magicWandBtn.classList.add('active');
+        
+        // Add magic wand cursor to body
+        document.body.classList.add('magic-wand-cursor');
+        
+        // Setup magic wand event listeners
+        setupMagicWandEvents();
+        
+    } else {
+        // Deactivate magic wand mode
+        deactivateMagicWandMode();
+    }
+}
+
+/**
+ * Deactivate magic wand mode
+ */
+function deactivateMagicWandMode() {
+    const magicWandBtn = document.querySelector('.magic-wand-btn');
+    
+    magicWandState.isActive = false;
+    magicWandState.hoveredElement = null;
+    
+    // Update button state
+    magicWandBtn.classList.remove('active');
+    
+    // Remove magic wand cursor from body
+    document.body.classList.remove('magic-wand-cursor');
+    
+    // Remove magic wand event listeners
+    removeMagicWandEvents();
+}
+
+/**
+ * Setup magic wand event listeners
+ */
+function setupMagicWandEvents() {
+    // Add mouseover event listener to all elements
+    document.addEventListener('mouseover', handleMagicWandHover);
+    document.addEventListener('mouseout', handleMagicWandOut);
+}
+
+/**
+ * Remove magic wand event listeners
+ */
+function removeMagicWandEvents() {
+    document.removeEventListener('mouseover', handleMagicWandHover);
+    document.removeEventListener('mouseout', handleMagicWandOut);
+}
+
+/**
+ * Handle mouse hover in magic wand mode
+ */
+function handleMagicWandHover(e) {
+    if (!magicWandState.isActive) return;
+    
+    // Don't trigger on the magic wand button itself or bottom bar elements
+    if (e.target.closest('.bottom-bar') || e.target.closest('.header')) return;
+    
+    // Find the closest pane or main container element
+    let targetElement = e.target.closest('.pane') || e.target.closest('.main-container');
+    
+    if (targetElement && targetElement !== magicWandState.hoveredElement) {
+        magicWandState.hoveredElement = targetElement;
+        
+        // Trigger sparkle effect on the hovered element
+        triggerMagicWandSparkle(targetElement);
+    }
+}
+
+/**
+ * Handle mouse out in magic wand mode
+ */
+function handleMagicWandOut(e) {
+    if (!magicWandState.isActive) return;
+    
+    // Clear hovered element when mouse leaves
+    if (e.target.closest('.pane') === magicWandState.hoveredElement) {
+        magicWandState.hoveredElement = null;
+    }
+}
+
+/**
+ * Trigger sparkle effect for magic wand
+ * @param {HTMLElement} element - The element to add sparkles to
+ */
+function triggerMagicWandSparkle(element) {
+    // Don't add multiple sparkle overlays to the same element
+    if (element.querySelector('.magic-sparkle-overlay')) return;
+    
+    // Create sparkle overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'magic-sparkle-overlay';
+    
+    // Create sparkle container
+    const sparkleContainer = document.createElement('div');
+    sparkleContainer.className = 'sparkle-container';
+    overlay.appendChild(sparkleContainer);
+    
+    // Generate sparkle emojis
+    const sparkleEmojis = ['✨', '⭐', '🌟', '💫', '⚡', '💎'];
+    const sparkleCount = 8; // Fewer sparkles for hover effect
+    
+    for (let i = 0; i < sparkleCount; i++) {
+        const sparkle = document.createElement('div');
+        sparkle.className = 'sparkle';
+        sparkle.textContent = sparkleEmojis[Math.floor(Math.random() * sparkleEmojis.length)];
+        
+        // Random position and animation delay
+        sparkle.style.left = Math.random() * 100 + '%';
+        sparkle.style.top = Math.random() * 100 + '%';
+        sparkle.style.animationDelay = Math.random() * 0.3 + 's';
+        sparkle.style.animationDuration = '1s'; // Shorter duration for hover effect
+        
+        sparkleContainer.appendChild(sparkle);
+    }
+    
+    // Add overlay to element
+    element.style.position = 'relative';
+    element.appendChild(overlay);
+    
+    // Remove overlay after animation
+    setTimeout(() => {
+        if (overlay.parentNode) {
+            overlay.parentNode.removeChild(overlay);
+        }
+    }, 1000);
 }
 
 // Prevent context menu on dividers

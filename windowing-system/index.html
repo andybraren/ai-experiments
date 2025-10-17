@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechTree - Civilization Style Technology Roadmap</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <header class="header">
+            <h1>TechTree - Technology Roadmap</h1>
+            <div class="era-info">
+                <span class="current-era">Current Era: <span id="current-era-name">Ancient</span></span>
+                <span class="progress">Progress: <span id="era-progress">0%</span></span>
+            </div>
+        </header>
+        
+        <div class="canvas-container">
+            <canvas id="tech-tree-canvas" width="1600" height="800"></canvas>
+        </div>
+        
+        <div class="controls">
+            <button id="reset-btn">Reset Progress</button>
+            <button id="toggle-grid">Toggle Grid</button>
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color completed"></div>
+                    <span>Completed</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color unlocked"></div>
+                    <span>Available</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color locked"></div>
+                    <span>Locked</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color hidden"></div>
+                    <span>Future Era</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="app.js"></script>
+</body>
+</html>
